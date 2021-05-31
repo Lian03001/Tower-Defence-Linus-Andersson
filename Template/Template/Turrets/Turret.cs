@@ -14,12 +14,14 @@ namespace Template.Turrets
 {
     public class Turret
     {
-        public float x_position;
+        public float x_position;    //position
         public float y_position;
-        public float attack_speed;
+
+        public float attack_speed;      //attacken
         public float attack_Wind_UP;
         public float attack_range;
-        public List<Minion> minions_in_range = new List<Minion>();
+
+        public List<Minion> minions_in_range = new List<Minion>();      //vem som attackeras
         public List<Minion> list_target = new List<Minion>();
 
         public Turret(float x_p, float y_p, float AS, float Atk_WUP, float range, List<Minion> in_range, List<Minion> target)

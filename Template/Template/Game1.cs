@@ -20,7 +20,7 @@ namespace Template
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        //Spelet är 800x480 
+        //Spelet är gjort med upplösningen 800x480 
 
         
 
@@ -28,7 +28,9 @@ namespace Template
         Texture2D meeleminion;
         Texture2D poro;
         Texture2D turret;
-        Rectangle Road1 = new Rectangle(0, 60, 445, 60);
+
+        //ritar upp banan
+        Rectangle Road1 = new Rectangle(0, 60, 445, 60);        
         Rectangle Road2 = new Rectangle(385, 60, 61, 160);
         Rectangle Road3 = new Rectangle(385, 220, 225, 60);
         Rectangle Road4 = new Rectangle(550, 60, 60, 220);
@@ -40,12 +42,13 @@ namespace Template
         int ME_x = 300;
         int ME_y = 200;
 
-        int TurretCD = 0;
+        int TurretCD = 0;       //hindrar mig skapa flera torn samtidigt
 
-        int Time = 0;
+        int Time = 0;       //tid för att räkna hur ofta minions ska spawna 
 
 
 
+        //få distansen mellan två punkter
         private static double GetDistance(double x1, double y1, double x2, double y2)
         {
             return Math.Sqrt(Math.Pow((x2 - x1), 2) + Math.Pow((y2 - y1), 2));
@@ -64,6 +67,11 @@ namespace Template
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
         }
+
+
+
+
+        //metoder för att skapa fiender och torn  +  lista till de respektiva klasserna
         List<Minion> minions = new List<Minion>();
         public void SpawnMinion(float x_p, float y_p, float x_s, float y_s, int hp, float traveled)
         {
@@ -71,7 +79,6 @@ namespace Template
             minions.Add(Minion1);
             minions.Count();
         }
-
 
         List<Turret> turrets = new List<Turret>();
         public void SpawnTurret(float x_p, float y_p, float AS, float Atk_WUP, float range, List<Minion> in_range, List<Minion> target)
@@ -129,8 +136,12 @@ namespace Template
         int Enemys = 0;
         protected override void Update(GameTime gameTime)
         {
-            Time += 1;
-            TurretCD++;
+            Time += 1;      //ökar variabeln som skapar fiender
+
+            TurretCD++;     //ökar variabeln som hindrar mig skapa flera torn
+
+
+            //skapar en fiende var 100 enhet
             if ((Time / (Enemys + 1)) == 100)
             {
                 SpawnMinion(0, 60, 2, 0, 1, 0);
@@ -138,6 +149,8 @@ namespace Template
             }
 
 
+
+            //förflytta spelarens karaktär
             KeyboardState kstate = Keyboard.GetState();
 
             if (kstate.IsKeyDown(Keys.W))
@@ -149,6 +162,7 @@ namespace Template
             if (kstate.IsKeyDown(Keys.A))
                 ME_x = ME_x - 3;
 
+            //skapar ett torn där spelaren står
             if (kstate.IsKeyDown(Keys.Space) && TurretCD > 40)
             {
                 TurretCD = 0;
@@ -156,30 +170,37 @@ namespace Template
             }
 
 
-
-            foreach (Turret a in turrets)    //a = allie
+            //går igenom varje torn så att de ska:   antingen skjuta rätt fiende   eller  göra sig redo för att skjuta
+            foreach (Turret a in turrets)    //a = ally
             {
-                float current_highest_traveled = 0;
-                a.attack_Wind_UP++;
+                float current_highest_traveled = 0;     //skapar variabel som sparar "highest traveled" bland de fiender inom räckvidd
+
+                a.attack_Wind_UP++;     //får tornet redo att attackera
+
+                //får tornet att attackera ifall den får det
                 if (a.attack_Wind_UP > a.attack_speed)     //e = enemy
                 {
                     //a.minions_in_range.Clear();  ?? detta förstörde allt
+                    //kollar distansen till varje fiende
                     foreach (Minion e in minions)
                     {
                         if (GetDistance(e.x_position, e.y_position, a.x_position, a.y_position) <= a.attack_range)
                             a.minions_in_range.Add(e);
                     }
 
+                    //kollar vinken fiende som är inom räckvidd
                     if (a.minions_in_range != null)
                     foreach (Minion e in a.minions_in_range)
                     {
                        if (e.units_traveled > current_highest_traveled)
                        {
                             a.list_target.Clear();
-                            current_highest_traveled = e.units_traveled;
+                            current_highest_traveled = e.units_traveled;    //den viktiga delen än så länge 
                             a.list_target.Add(e);
                        }
                     }
+
+                    //skadar fienden som har samma position som den sparade variabeln "highest traveled"
                     foreach (Minion e in minions)
                     {
                         if (e.units_traveled == current_highest_traveled)
@@ -189,6 +210,7 @@ namespace Template
             }
 
 
+            //om en fiende får 0 eller mindre i hälso så försvinner den
             for (int i = minions.Count - 1; i >= 0; i--)
             {
                 if (minions[i].health <= 0)
@@ -199,6 +221,7 @@ namespace Template
 
 
 
+            //flyttar varje fiende
             foreach (Minion e in minions)
             {
                 e.x_position = e.x_position + e.x_speed;
@@ -208,7 +231,7 @@ namespace Template
              
 
 
-
+            //fiende ändrar riktning så de följer banan
             foreach (Minion e in minions)
             {
                 if (e.x_position == 386 && e.y_position == 60)
@@ -250,7 +273,7 @@ namespace Template
 
             /*foreach (Minion e in minions)
             {
-                if (e.Health == 0 || e.x_position == 300)
+                if (e.Health == 0 || e.x_position == 300)               tänkt att senare lägga till så att dem försvinner när fiende går utanför banan
                 {
                     minions.Remove(e);
                 }
@@ -277,7 +300,9 @@ namespace Template
             GraphicsDevice.Clear(Color.White);
 
             
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied);    //ändrat så att färger på en sprite kan vara "transparent"
+
+            //skapar grafiskt banan
             spriteBatch.Draw(pixel, Road1, Color.Black);
             spriteBatch.Draw(pixel, Road2, Color.Black);
             spriteBatch.Draw(pixel, Road3, Color.Black);
@@ -285,16 +310,20 @@ namespace Template
             spriteBatch.Draw(pixel, Road5, Color.Black);
             spriteBatch.Draw(pixel, Road6, Color.Black);
             spriteBatch.Draw(pixel, Road7, Color.Black);
+
+            //ritar varje fiende
             foreach (Minion e in minions)
             {
                 spriteBatch.Draw(meeleminion, new Vector2(e.x_position, e.y_position), Color.White);
             }
 
+            //ritar varje torn
             foreach (Turret e in turrets)
             {
                 spriteBatch.Draw(turret, new Vector2(e.x_position, e.y_position), Color.White);
             }
 
+            //ritar spelaren karaktär
             spriteBatch.Draw(poro, new Vector2(ME_x, ME_y), Color.White);
 
             spriteBatch.End();
