@@ -19,13 +19,21 @@ namespace Template.Enemys
         public float x_speed;
         public float y_speed;
 
-        public Minion(float x_p, float y_p, float x_s, float y_s)
+        public int health;
+
+        public float units_traveled;
+
+        public Minion(float x_p, float y_p, float x_s, float y_s, int hp, float traveled)
         {
             x_position = x_p;
             y_position = y_p;
 
             x_speed = x_s;
             y_speed = y_s;
+
+            health = hp;
+
+            units_traveled = traveled;
         }
         //public Minion () { }
     }
