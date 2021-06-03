@@ -144,8 +144,8 @@ namespace Template
             //skapar en fiende var 100 enhet
             if ((Time / (Enemys + 1)) == 100)
             {
-                SpawnMinion(0, 60, 2, 0, 1, 0);
-                Enemys++;
+                SpawnMinion(0, 60, 2, 0, 1, 0);             //kallar på metoden som skapar en "Minion"(fiende)
+                Enemys++;                               //ökar antalet enemies för att veta hur många "Time" ska delas med.
             }
 
 
@@ -165,8 +165,8 @@ namespace Template
             //skapar ett torn där spelaren står
             if (kstate.IsKeyDown(Keys.Space) && TurretCD > 40)
             {
-                TurretCD = 0;
-                SpawnTurret(ME_x + 40, ME_y, 100, 0, 200, new List<Minion>(), new List<Minion>());
+                TurretCD = 0;           //Kan bara skapa ett torn var 40'onde enhet. Här blir enheten 0 igen.
+                SpawnTurret(ME_x + 40, ME_y, 100, 0, 200, new List<Minion>(), new List<Minion>());          //kallar på metoden som skapar ett torn.
             }
 
 
@@ -175,11 +175,13 @@ namespace Template
             {
                 float current_highest_traveled = 0;     //skapar variabel som sparar "highest traveled" bland de fiender inom räckvidd
 
-                a.attack_Wind_UP++;     //får tornet redo att attackera
+                a.attack_Wind_UP++;     //får tornet redo att attackera. Just nu behöver denna bli 100.
 
                 //får tornet att attackera ifall den får det
                 if (a.attack_Wind_UP > a.attack_speed)     //e = enemy
                 {
+
+                    a.attack_Wind_UP = 0;
                     //a.minions_in_range.Clear();  ?? detta förstörde allt
                     //kollar distansen till varje fiende
                     foreach (Minion e in minions)
@@ -188,14 +190,14 @@ namespace Template
                             a.minions_in_range.Add(e);
                     }
 
-                    //kollar vinken fiende som är inom räckvidd
+                    //kollar vilken fiende som är inom räckvidd
                     if (a.minions_in_range != null)
                     foreach (Minion e in a.minions_in_range)
                     {
                        if (e.units_traveled > current_highest_traveled)
                        {
                             a.list_target.Clear();
-                            current_highest_traveled = e.units_traveled;    //den viktiga delen än så länge 
+                            current_highest_traveled = e.units_traveled;    //Den sparar vilket värde dem som färdats längst inom räckhåll har färdats.
                             a.list_target.Add(e);
                        }
                     }
@@ -215,7 +217,7 @@ namespace Template
             {
                 if (minions[i].health <= 0)
                 {
-                    minions.RemoveAt(i);
+                    minions.RemoveAt(i);        //tar bort fiende när den har 0 i liv.
                 }
             }
 
@@ -324,8 +326,9 @@ namespace Template
             }
 
             //ritar spelaren karaktär
-            spriteBatch.Draw(poro, new Vector2(ME_x, ME_y), Color.White);
-
+            spriteBatch.Draw(poro, new Vector2(ME_x, ME_y), Color.White);           // "/processorParam:ColorKeyColor = 119,197,213,255"  denna raden finns i content. Detta gör så att fyrkanten 
+                                                                                    // runt inte syns. 
+            
             spriteBatch.End();
 
 
