@@ -35,6 +35,5 @@ namespace Template.Enemys
 
             units_traveled = traveled;
         }
-        //public Minion () { }
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using System.Collections;
 using Template.Enemys;
 using Template.Turrets;
+using Template.Shots;
 
 namespace Template
 {
@@ -28,6 +29,7 @@ namespace Template
         Texture2D meeleminion;
         Texture2D poro;
         Texture2D turret;
+        Texture2D shot;
 
         //ritar upp banan
         Rectangle Road1 = new Rectangle(0, 60, 445, 60);        
@@ -49,11 +51,16 @@ namespace Template
 
 
         //få distansen mellan två punkter
-        private static double GetDistance(double x1, double y1, double x2, double y2)
+        private static double GetDistance(float x1, float y1, float x2, float y2)
         {
             return Math.Sqrt(Math.Pow((x2 - x1), 2) + Math.Pow((y2 - y1), 2));
         }
 
+
+        private static double GetXComparedToY(float x1, float y1, float x2, float y2)
+        {
+            return (x1 - x2)/(y1 - y2);
+        }
 
 
 
@@ -87,6 +94,14 @@ namespace Template
             turrets.Add(turret1);
             turrets.Count();
         }
+
+        List<Shot> shots = new List<Shot>();
+        public void SpawnShot(float x_p, float y_p, float x_s, float y_s, float traveled, float to_target, List<Minion> target)
+        {
+            Shot shot1 = new Shot(x_p, y_p, x_s, y_s, traveled, to_target, target);
+            shots.Add(shot1);
+            shots.Count();
+        }
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
         /// This is where it can query for any required services and load any non-graphic
@@ -114,6 +129,7 @@ namespace Template
             meeleminion = Content.Load<Texture2D>("Meele Minion");
             poro = Content.Load<Texture2D>("poro");
             turret = Content.Load<Texture2D>("Turret");
+            shot = Content.Load<Texture2D>("Shot");
 
             // TODO: use this.Content to load your game content here 
         }
@@ -203,13 +219,33 @@ namespace Template
                     }
 
                     //skadar fienden som har samma position som den sparade variabeln "highest traveled"
-                    foreach (Minion e in minions)
+                    for (int e = minions.Count - 1; e >= 0; e--)
                     {
-                        if (e.units_traveled == current_highest_traveled)
-                            e.health--;
+                        if (minions[e].units_traveled == current_highest_traveled)
+                        {
+                            minions[e].health--;
+                            SpawnShot(a.x_position, a.y_position, Convert.ToSingle(GetXComparedToY(a.x_position, minions[e].x_position, a.y_position, minions[e].y_position)), 10, 0, (a.x_position - (minions[e].x_position) + (a.y_position - minions[e].y_position)), new List<Minion>(e));
+                        }
                     }
                 }
             }
+
+            foreach (Shot s in shots)           //s = shots
+            {
+                s.x_position = s.x_position + s.x_speed;
+                s.y_position = s.y_position + s.y_speed;
+            }
+
+            if (shots.Count > 0)
+            for (int i = shots.Count - 1; i >= 0; i--)
+            {
+                    shots[i].units_traveled = shots[i].units_traveled + shots[i].x_speed + shots[i].y_speed;
+                if (shots[i].units_traveled >= shots[i].units_to_target)
+                {
+                    shots.RemoveAt(i);        //tar bort "shot" när den är vid sin destination.
+                }
+            }
+
 
 
             //om en fiende får 0 eller mindre i hälso så försvinner den
@@ -231,8 +267,6 @@ namespace Template
                 e.units_traveled = e.units_traveled + e.x_speed + e.y_speed;
             }
              
-
-
             //fiende ändrar riktning så de följer banan
             foreach (Minion e in minions)
             {
@@ -328,7 +362,11 @@ namespace Template
             //ritar spelaren karaktär
             spriteBatch.Draw(poro, new Vector2(ME_x, ME_y), Color.White);           // "/processorParam:ColorKeyColor = 119,197,213,255"  denna raden finns i content. Detta gör så att fyrkanten 
                                                                                     // runt inte syns. 
-            
+            foreach (Shot e in shots)
+            {
+                spriteBatch.Draw(shot, new Vector2(e.x_position, e.y_position), Color.White);
+            }
+
             spriteBatch.End();
 
 
