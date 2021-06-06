@@ -53,7 +53,7 @@ namespace Template
         float player_max_hp = 4;
         float player_current_hp = 4;      
         float ofmaxhp = 1;
-        int realofmaxhp;
+        int realofmaxhp;        //ofmaxhp fast den som används efter att gjort den till en int.
 
         private SpriteFont money;
         private int money1 = 3;
@@ -61,14 +61,14 @@ namespace Template
         private SpriteFont enemys;
 
         int turret_cost = 3;
-        int turret_cost_increase = 2;
+        int turret_cost_increase = 2;       //ökning av kostnad varje gång ett torn görs.
 
         int Enemys = 0;
 
         int enemy_hp = 2;
         int enemy_speed = 2;
 
-        int enemys_frequency = 100;
+        int enemys_frequency = 100;         //hur ofta en fiende ska skapas
 
 
         //få distansen mellan två punkter
@@ -78,16 +78,10 @@ namespace Template
         }
 
 
-        private static double GetXComparedToY(float x1, float y1, float x2, float y2)
-        {
-            return (x1 - x2)/(y1 - y2);
-        }
-
-
 
         //KOmentar
 
-        float current_highest_traveled = -1;     //skapar variabel som sparar "highest traveled" bland de fiender inom räckvidd
+        float current_highest_traveled = -1;     //skapar variabel som sparar "highest traveled" bland de fiender inom räckvidd.
 
 
         public Game1()
@@ -99,7 +93,7 @@ namespace Template
 
 
 
-        //metoder för att skapa fiender och torn  +  lista till de respektiva klasserna
+        //metoder för att skapa fiender, torn och skott  +  lista till de respektiva klasserna
         List<Minion> minions = new List<Minion>();
         public void SpawnMinion(Vector2 position, Vector2 speed, int hp, float traveled)
         {
@@ -188,15 +182,20 @@ namespace Template
                 Time = 0;
             }
 
-            ofmaxhp = player_current_hp / player_max_hp;
+            ofmaxhp = player_current_hp / player_max_hp;        //ofmaxhp är procent av max hp som spelaren just nu har. Kan vara mellan 0 och 1.
 
-            realofmaxhp = Convert.ToInt32(ofmaxhp*800);
+            realofmaxhp = Convert.ToInt32(ofmaxhp*800);         //gör om ofmaxhp till int. Multiplicerar även 800 för att täcka hela x-axeln.
 
-            if (player_current_hp <= 0)
+
+
+            if (player_current_hp <= 0)         
             {
                 Exit();
             }
 
+
+
+            //gör spelet svårare genom: hastighet, hälsa och frekvens av fiender
             if (Enemys == 20)
             {
                 enemy_hp = 3;
@@ -232,6 +231,8 @@ namespace Template
                 turret_cost_increase = 10;
             }
 
+
+
             //förflytta spelarens karaktär
             KeyboardState kstate = Keyboard.GetState();
 
@@ -249,6 +250,8 @@ namespace Template
             {
                 TurretCD = 0;           //Kan bara skapa ett torn var 40'onde enhet. Här blir enheten 0 igen.
                 SpawnTurret(ME_x + 40, ME_y, 100, 0, 200, new List<Minion>(), new List<Minion>());          //kallar på metoden som skapar ett torn.
+                
+                //ändrar pengar
                 money1 = money1 - turret_cost;
                 turret_cost = turret_cost + turret_cost_increase;
             }
@@ -259,32 +262,33 @@ namespace Template
             //går igenom varje torn så att de ska:   antingen skjuta rätt fiende   eller  göra sig redo för att skjuta
             foreach (Turret a in turrets)    //a = ally
             {
-                current_highest_traveled = -1;     //minskar variabel som sparar "highest traveled" bland de fiender inom räckvidd till 0
+                current_highest_traveled = -1;     //minskar variabel som sparar "highest traveled" bland de fiender inom räckvidd till -1.
 
-                a.attack_Wind_UP++;     //får tornet redo att attackera. Just nu behöver denna bli 100.
+                a.attack_Wind_UP++;     //får tornet redo att attackera. Just nu behöver denna bli 100(attack speed).
 
-                //får tornet att attackera ifall den får det
-                if (a.attack_Wind_UP > a.attack_speed)     //e = enemy 
+                    
+                if (a.attack_Wind_UP > a.attack_speed)     //får tornet att attackera ifall den får det  
                 {
 
                     a.attack_Wind_UP = 0;
-                    //a.minions_in_range.Clear();  ?? detta förstörde allt
-                    //kollar distansen till varje fiende
+
                     a.minions_in_range.Clear();
-                    foreach (Minion e in minions)
+
+                    //kollar distansen till varje fiende
+                    foreach (Minion e in minions)   //e = enemy
                     {
                         if (GetDistance(a.x_position, a.y_position, e.Position.X + 30, e.Position.Y + 25) <= a.attack_range)
-                            a.minions_in_range.Add(e);
+                            a.minions_in_range.Add(e);      //lägger till dem till variabeln om dem är in-range
                     }
 
-                    //kollar vilken fiende som är inom räckvidd
+                    //kollar vilken fiende in-range som har färdats längst
                     if (a.minions_in_range != null)
-                    foreach (Minion e in a.minions_in_range)
+                    foreach (Minion e in a.minions_in_range)    
                     {
                        if (e.units_traveled > current_highest_traveled)
                        {
                             a.list_target.Clear();
-                            current_highest_traveled = e.units_traveled;    //Den sparar vilket värde dem som färdats längst inom räckhåll har färdats.
+                            current_highest_traveled = e.units_traveled;    //Den sparar vilket värde som färdats längst inom räckhåll.
                             a.list_target.Add(e);
                        }
                     }
@@ -294,74 +298,57 @@ namespace Template
                     {
                         if (minions[e].units_traveled == current_highest_traveled)
                         {
-
+                            //skapar ett grafiskt skott som bara är för syns skull.
                             SpawnShot(new Vector2(a.x_position, a.y_position), minions[e].Position - new Vector2(a.x_position, a.y_position), 0, ((minions[e].Position.X + 30) - (a.x_position) + ((minions[e].Position.Y + 25) - a.y_position)), new List<Minion>(e));
+                            
                             minions[e].health--;
                          
                         }
                     }
-                    /*foreach (Minion e in minions)
-                    {
-                        if (e.units_traveled == current_highest_traveled)
-                        {
-                            e.health--;
-
-                            SpawnShot(new Vector2(a.x_position, a.y_position), (new Vector2(a.x_position, a.y_position) - e.Position).Normalize, (a.x_position - (e.Position.X) + (a.y_position - e.Position.Y)), new List<Minion>(e));
-
-
-                        }
-                    }*/
                 }
             }
 
-            //Vector2 dir = player.Position - enemy.Position;
-            //dir.Normalize();
-            //enemy.Position += dir * speed;
 
 
-
-
+            //förflyttar varje skott beroende på dess riktning och hastighet.
             foreach (Shot s in shots)           //s = shots
             {
                 s.Direction.Normalize();
                 s.Position += (s.Direction * shotspeed);
             }
 
+            //ökar varje skotts "units_traveled", och tar bort skottet ifall den nått sin destination.
             if (shots.Count > 0)
             for (int i = shots.Count - 1; i >= 0; i--)
             {
-                    shots[i].units_traveled = (shots[i].units_traveled) + (shots[i].Direction.X * shotspeed) + (shots[i].Direction.Y * shotspeed);
+                    shots[i].units_traveled = (shots[i].units_traveled) + (shots[i].Direction.X * shotspeed) + (shots[i].Direction.Y * shotspeed);      //ökar "units traveled"
                 if (shots[i].units_traveled >= shots[i].units_to_target)
                 {
                     
-                        //shots[i].list_target[0].health--;
-                    
-                    shots.RemoveAt(i);        //tar bort "shot" när den är vid sin destination.
+                    shots.RemoveAt(i);        //tar bort "shot".
                 }
             }
 
 
 
-            //om en fiende får 0 eller mindre i hälso så försvinner den
+            //om en fiende får 0 eller mindre i hälso så försvinner den, och man får pengar.
             for (int i = minions.Count - 1; i >= 0; i--)
             {
                 if (minions[i].health <= 0)
                 {
-                    minions.RemoveAt(i);        //tar bort fiende när den har 0 i liv.
-                    money1++;
+                    minions.RemoveAt(i);            //tar bort fiende.
+                    money1++;                   //man får pengar
                 }
             }
 
 
 
-            //flyttar varje fiende
+            //flyttar varje fiende(minion), och ökar dess "units_traveled"
             foreach (Minion e in minions)
             {
-                //e.Position.X = e.x_position + e.x_speed;
-                //e.y_position = e.y_position + e.y_speed;
-                e.units_traveled = e.units_traveled + e.Speed.X + e.Speed.Y;
+                e.units_traveled = e.units_traveled + e.Speed.X + e.Speed.Y;        //units_traveled
 
-                e.Position += e.Speed;
+                e.Position += e.Speed;      //position
             }
              
 
@@ -405,22 +392,16 @@ namespace Template
                 }
             }
 
+            //om en fiende passerar dess mål förlorar spelaren liv och fienden försvinner.
             for (int e = minions.Count - 1; e >= 0; e--)
             {
                 if (minions[e].Position.X <= -61)
                 {
                     minions.RemoveAt(e);
-                    player_current_hp--;
+                    player_current_hp--;        
                 }
             }
 
-            /*foreach (Minion e in minions)
-            {
-                if (e.Health == 0 || e.x_position == 300)               tänkt att senare lägga till så att dem försvinner när fiende går utanför banan
-                {
-                    minions.Remove(e);
-                }
-            }*/
 
 
 
@@ -460,25 +441,34 @@ namespace Template
                 spriteBatch.Draw(meeleminion, new Vector2(e.Position.X, e.Position.Y), Color.White);
             }
 
+
             //ritar varje torn
             foreach (Turret e in turrets)
             {
                 spriteBatch.Draw(turret, new Vector2(e.x_position, e.y_position), Color.White);
             }
 
+
             //ritar spelaren karaktär
             spriteBatch.Draw(poro, new Vector2(ME_x, ME_y), Color.White);           // "/processorParam:ColorKeyColor = 119,197,213,255"  denna raden finns i content. Detta gör så att fyrkanten 
                                                                                     // runt inte syns. 
+
+            //ritar varje skott
             foreach (Shot e in shots)
             {
                 spriteBatch.Draw(shot, new Vector2(e.Position.X, e.Position.Y), Color.White);
             }
 
+            
+            //ritar "health bar", spelarens liv.
             spriteBatch.Draw(pixel, new Rectangle(0, 450, realofmaxhp, 30), Color.GreenYellow);
 
+            //ritar texten som visar mängd pengar
             spriteBatch.DrawString(money, "Money: "+ money1 + "  (turret cost: " + turret_cost + ")", new Vector2(50, 20), Color.Black);
 
+            //ritar texten som visar mängd Enemys som spawnats, även detta som är tänkt vara ditt "Score".
             spriteBatch.DrawString(enemys, "Enemys spawned: " + Enemys + "  (Score)", new Vector2(550   , 20), Color.Black);
+
 
             spriteBatch.End();
 
