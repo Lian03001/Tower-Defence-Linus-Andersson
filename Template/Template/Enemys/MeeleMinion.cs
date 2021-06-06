@@ -13,23 +13,23 @@ namespace Template.Enemys
 {
     public class Minion
     {
-        //public float x_position;    //position
-        //public float y_position;
-        public Vector2 Position;
+        public float x_position;    //position
+        public float y_position;
 
-        //public float x_speed;       //hastighet + riktning
-        //public float y_speed;
-        public Vector2 Speed;
+        public float x_speed;       //hastighet + riktning
+        public float y_speed;
 
         public int health;      //hälsa
 
         public float units_traveled;        //antal units som färdats          så att torn ska attackera den som färdats längst
 
-        public Minion(Vector2 position, Vector2 speed, int hp, float traveled)
+        public Minion(float x_p, float y_p, float x_s, float y_s, int hp, float traveled)
         {
-            Position = position;
+            x_position = x_p;
+            y_position = y_p;
 
-            Speed = speed;
+            x_speed = x_s;
+            y_speed = y_s;
 
             health = hp;
 
