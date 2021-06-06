@@ -80,9 +80,9 @@ namespace Template
 
         //metoder för att skapa fiender och torn  +  lista till de respektiva klasserna
         List<Minion> minions = new List<Minion>();
-        public void SpawnMinion(float x_p, float y_p, float x_s, float y_s, int hp, float traveled)
+        public void SpawnMinion(Vector2 position, Vector2 speed, int hp, float traveled)
         {
-            Minion Minion1 = new Minion(x_p, y_p, x_s, y_s, hp, traveled);
+            Minion Minion1 = new Minion(position, speed, hp, traveled);
             minions.Add(Minion1);
             minions.Count();
         }
@@ -96,9 +96,9 @@ namespace Template
         }
 
         List<Shot> shots = new List<Shot>();
-        public void SpawnShot(float x_p, float y_p, float x_s, float y_s, float traveled, float to_target, List<Minion> target)
+        public void SpawnShot(Vector2 position, Vector2 speed, float traveled, float to_target, List<Minion> target)
         {
-            Shot shot1 = new Shot(x_p, y_p, x_s, y_s, traveled, to_target, target);
+            Shot shot1 = new Shot(position, speed, traveled, to_target, target);
             shots.Add(shot1);
             shots.Count();
         }
@@ -160,7 +160,7 @@ namespace Template
             //skapar en fiende var 100 enhet
             if ((Time / (Enemys + 1)) == 100)
             {
-                SpawnMinion(0, 60, 2, 0, 1, 0);             //kallar på metoden som skapar en "Minion"(fiende)
+                SpawnMinion(new Vector2(0, 60), new Vector2(2, 0), 1, 0);             //kallar på metoden som skapar en "Minion"(fiende)
                 Enemys++;                               //ökar antalet enemies för att veta hur många "Time" ska delas med.
             }
 
@@ -202,7 +202,7 @@ namespace Template
                     //kollar distansen till varje fiende
                     foreach (Minion e in minions)
                     {
-                        if (GetDistance(e.x_position, e.y_position, a.x_position, a.y_position) <= a.attack_range)
+                        if (GetDistance(e.Position.X, e.Position.Y, a.x_position, a.y_position) <= a.attack_range)
                             a.minions_in_range.Add(e);
                     }
 
@@ -224,22 +224,43 @@ namespace Template
                         if (minions[e].units_traveled == current_highest_traveled)
                         {
                             minions[e].health--;
-                            SpawnShot(a.x_position, a.y_position, Convert.ToSingle(GetXComparedToY(a.x_position, minions[e].x_position, a.y_position, minions[e].y_position)), 10, 0, (a.x_position - (minions[e].x_position) + (a.y_position - minions[e].y_position)), new List<Minion>(e));
+
+                            SpawnShot(new Vector2(a.x_position, a.y_position), new Vector2(a.x_position, a.y_position) - minions[e].Position, 0, (a.x_position - (minions[e].Position.X) + (a.y_position - minions[e].Position.Y)), new List<Minion>(e));
+                            
+                        
                         }
                     }
+                    /*foreach (Minion e in minions)
+                    {
+                        if (e.units_traveled == current_highest_traveled)
+                        {
+                            e.health--;
+
+                            SpawnShot(new Vector2(a.x_position, a.y_position), (new Vector2(a.x_position, a.y_position) - e.Position).Normalize, (a.x_position - (e.Position.X) + (a.y_position - e.Position.Y)), new List<Minion>(e));
+
+
+                        }
+                    }*/
                 }
             }
 
+            //Vector2 dir = player.Position - enemy.Position;
+            //dir.Normalize();
+            //enemy.Position += dir * speed;
+
+
+
+
             foreach (Shot s in shots)           //s = shots
             {
-                s.x_position = s.x_position + s.x_speed;
-                s.y_position = s.y_position + s.y_speed;
+                s.Speed.Normalize();
+                s.Position += s.Speed * 10;
             }
 
             if (shots.Count > 0)
             for (int i = shots.Count - 1; i >= 0; i--)
             {
-                    shots[i].units_traveled = shots[i].units_traveled + shots[i].x_speed + shots[i].y_speed;
+                    shots[i].units_traveled = shots[i].units_traveled + shots[i].Speed.X + shots[i].Speed.Y;
                 if (shots[i].units_traveled >= shots[i].units_to_target)
                 {
                     shots.RemoveAt(i);        //tar bort "shot" när den är vid sin destination.
@@ -262,48 +283,50 @@ namespace Template
             //flyttar varje fiende
             foreach (Minion e in minions)
             {
-                e.x_position = e.x_position + e.x_speed;
-                e.y_position = e.y_position + e.y_speed;
-                e.units_traveled = e.units_traveled + e.x_speed + e.y_speed;
+                //e.Position.X = e.x_position + e.x_speed;
+                //e.y_position = e.y_position + e.y_speed;
+                //e.units_traveled = e.units_traveled + e.x_speed + e.y_speed;
+
+                e.Position += e.Speed;
             }
              
             //fiende ändrar riktning så de följer banan
             foreach (Minion e in minions)
             {
-                if (e.x_position == 386 && e.y_position == 60)
+                if (e.Position.X == 386 && e.Position.Y == 60)
                 {
-                    e.x_speed = 0;
-                    e.y_speed = 2;
+                    e.Speed.X = 0;
+                    e.Speed.Y = 2;
                 }
 
-                if (e.x_position == 386 && e.y_position == 220)
+                if (e.Position.X == 386 && e.Position.Y == 220)
                 {
-                    e.x_speed = 2;
-                    e.y_speed = 0;
+                    e.Speed.X = 2;
+                    e.Speed.Y = 0;
                 }
 
-                if (e.x_position == 550 && e.y_position == 220)
+                if (e.Position.X == 550 && e.Position.Y == 220)
                 {
-                    e.x_speed = 0;
-                    e.y_speed = -2;
+                    e.Speed.X = 0;
+                    e.Speed.Y = -2;
                 }
 
-                if (e.x_position == 550 && e.y_position == 60)
+                if (e.Position.X == 550 && e.Position.Y == 60)
                 {
-                    e.x_speed = 2;
-                    e.y_speed = 0;
+                    e.Speed.X = 2;
+                    e.Speed.Y = 0;
                 }
 
-                if (e.x_position == 680 && e.y_position == 60)
+                if (e.Position.X == 680 && e.Position.Y == 60)
                 {
-                    e.x_speed = 0;
-                    e.y_speed = 2;
+                    e.Speed.X = 0;
+                    e.Speed.Y = 2;
                 }
 
-                if (e.x_position == 680 && e.y_position == 360)
+                if (e.Position.X == 680 && e.Position.Y == 360)
                 {
-                    e.x_speed = -2;
-                    e.y_speed = 0;
+                    e.Speed.X = -2;
+                    e.Speed.Y = 0;
                 }
             }
 
@@ -350,7 +373,7 @@ namespace Template
             //ritar varje fiende
             foreach (Minion e in minions)
             {
-                spriteBatch.Draw(meeleminion, new Vector2(e.x_position, e.y_position), Color.White);
+                spriteBatch.Draw(meeleminion, new Vector2(e.Position.X, e.Position.Y), Color.White);
             }
 
             //ritar varje torn
@@ -364,7 +387,7 @@ namespace Template
                                                                                     // runt inte syns. 
             foreach (Shot e in shots)
             {
-                spriteBatch.Draw(shot, new Vector2(e.x_position, e.y_position), Color.White);
+                spriteBatch.Draw(shot, new Vector2(e.Position.X, e.Position.Y), Color.White);
             }
 
             spriteBatch.End();
